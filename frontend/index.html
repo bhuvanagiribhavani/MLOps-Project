@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(160deg, #0f2027 0%, #203a43 40%, #2c5364 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+            z-index: 0;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-30px, -20px) rotate(3deg); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideResult {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
+                        0 2px 8px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 500px;
+            padding: 44px 40px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .card-header .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.3);
+        }
+
+        .card-header .icon svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .card h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .card .subtitle {
+            text-align: center;
+            font-size: 0.88rem;
+            color: #718096;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.7);
+            color: #2d3748;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .form-group input::placeholder {
+            color: #a0aec0;
+        }
+
+        .form-group input:hover {
+            border-color: rgba(13, 148, 136, 0.3);
+        }
+
+        .form-group input:focus {
+            border-color: #0d9488;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1),
+                        0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-predict {
+            width: 100%;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: #fff;
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.3);
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-predict::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(13, 148, 136, 0.4);
+        }
+
+        .btn-predict:hover::after {
+            opacity: 1;
+        }
+
+        .btn-predict:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.15);
+        }
+
+        .result {
+            margin-top: 28px;
+            text-align: center;
+            padding: 18px 20px;
+            border-radius: 14px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            display: none;
+            backdrop-filter: blur(8px);
+            animation: slideResult 0.35s ease-out;
+        }
+
+        .result .result-icon {
+            font-size: 1.6rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .result.positive {
+            background: rgba(254, 215, 215, 0.5);
+            color: #c53030;
+            border: 1px solid rgba(254, 178, 178, 0.6);
+        }
+
+        .result.negative {
+            background: rgba(198, 246, 213, 0.5);
+            color: #22543d;
+            border: 1px solid rgba(154, 230, 180, 0.6);
+        }
+
+        .result.error {
+            background: rgba(254, 235, 200, 0.5);
+            color: #c05621;
+            border: 1px solid rgba(251, 211, 141, 0.6);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.75rem;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="icon">
+                <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <h1>Diabetes Prediction System</h1>
+            <p class="subtitle">Enter patient details below to get a prediction</p>
+        </div>
+
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="pregnancies">Pregnancies</label>
+                <input type="number" id="pregnancies" placeholder="e.g. 2" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="glucose">Glucose</label>
+                <input type="number" id="glucose" step="any" placeholder="e.g. 120" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="bloodPressure">Blood Pressure</label>
+                <input type="number" id="bloodPressure" step="any" placeholder="e.g. 80" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="bmi">BMI</label>
+                <input type="number" id="bmi" step="any" placeholder="e.g. 25.5" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" placeholder="e.g. 35" min="1" required>
+            </div>
+
+            <button type="submit" class="btn-predict" id="predictBtn">Predict</button>
+        </form>
+
+        <div class="result" id="result"></div>
+        <div class="footer">Powered by Machine Learning</div>
+    </div>
+
+    <script>
+        const form = document.getElementById('predictionForm');
+        const resultDiv = document.getElementById('result');
+        const predictBtn = document.getElementById('predictBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultDiv.style.display = 'none';
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Predicting…';
+
+            const payload = {
+                Pregnancies: parseInt(document.getElementById('pregnancies').value, 10),
+                Glucose: parseFloat(document.getElementById('glucose').value),
+                BloodPressure: parseFloat(document.getElementById('bloodPressure').value),
+                BMI: parseFloat(document.getElementById('bmi').value),
+                Age: parseInt(document.getElementById('age').value, 10)
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server responded with status ' + response.status);
+                }
+
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+
+                if (data.diabetic) {
+                    resultDiv.className = 'result positive';
+                    resultDiv.innerHTML = '<span class="result-icon">⚠️</span>High Risk — The model predicts the patient is likely diabetic.';
+                } else {
+                    resultDiv.className = 'result negative';
+                    resultDiv.innerHTML = '<span class="result-icon">✅</span>Low Risk — The model predicts the patient is unlikely to be diabetic.';
+                }
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<span class="result-icon">⚡</span>Could not reach the prediction server. Make sure it is running.';
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Predict';
+            }
+        });
+    </script>
+</body>
+</html>
