@@ -2,6 +2,8 @@
 
 An end-to-end MLOps project that predicts whether a person is diabetic based on health metrics, using **FastAPI**, **Docker**, and **Kubernetes**.
 
+Live Demo : https://mlops-project-cuqt.onrender.com/docs
+
 ---
 
 ## Project Structure
